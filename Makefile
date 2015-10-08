@@ -105,14 +105,6 @@ image-jessie: packages dirs ssh-keys
 	sudo rm -rf jessie
 
 ##############################################################################
-# TESTNG (TBC)
-##############################################################################
-test-api: clean dirs build restart
-	@echo "Running API tests"
-	@cd tests && URL=$(URL) go test
-	@make stop
-
-##############################################################################
 # DOCKER TARGETS  BUILDING, STARTING AND STOPPING
 ##############################################################################
 
