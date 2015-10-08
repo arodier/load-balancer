@@ -29,9 +29,39 @@ build:
 	@echo -n "Building the program: "
 	@$(GO) build $(BUILD_OPTIONS) -o bin/sains src/main.go && echo 'OK'
 
+##############################################################################
+# GENERIC DEPLOYMENT USING SSH
+# rsync or simple scp is OK for this demo.
+# But ansible would be better for more than just a files
+##############################################################################
+
+# The following values are just examples
+DEPLOY_SERVER ?= 127.0.0.1
+DEPLOY_KEY ?= deploy/id_rsa
+BACKEND_ADDRESSES ?= 192.168.42.2,192.168.42.3,192.168.42.4
+
+deploy-backend: build
+	@echo 'Deploying backend on '$(DEPLOY_SERVER)
+	scp -p -i $(DEPLOY_KEY) deploy/service.sh root@$(DEPLOY_SERVER):/etc/init.d/sains
+	ssh -i $(DEPLOY_KEY) root@$(DEPLOY_SERVER) service sains stop
+	scp -p -i $(DEPLOY_KEY) bin/sains root@$(DEPLOY_SERVER):/usr/bin/sains
+	ssh -i $(DEPLOY_KEY) root@$(DEPLOY_SERVER) update-rc.d sains defaults
+	ssh -i $(DEPLOY_KEY) root@$(DEPLOY_SERVER) service sains start
+
+deploy-frontend:
+	echo 'Deploying the web front end on'$(DEPLOY_SERVER)
+	cp deploy/nginx-generic.conf /tmp/nginx.conf
+	sed -i "s/SERVERS_BLOCK/server $(BACKEND_ADDRESSES)/" /tmp/nginx.conf
+	sed -i 's/,/;\n    server /g' /tmp/nginx.conf
+	ssh -i $(DEPLOY_KEY) root@localhost apt-get -y install nginx
+	scp -i $(DEPLOY_KEY) /tmp/nginx.conf root@localhost:/etc/nginx/sites-available/sains.conf
+	ssh -i $(DEPLOY_KEY) root@localhost ln -nsf /etc/nginx/sites-available/sains.conf /etc/nginx/sites-enabled/sains.conf
+	ssh -i $(DEPLOY_KEY) root@localhost rm -f /etc/nginx/sites-enabled/default
+	ssh -i $(DEPLOY_KEY) root@localhost service nginx restart
+	rm -f /tmp/nginx.conf
 
 ##############################################################################
-# DEPLOYMENT
+# DEPLOYMENT ON THE DOCKER IMAGES
 # rsync or simple scp is OK for this demo.
 # But ansible would be better for more than just a files
 ##############################################################################
@@ -56,7 +86,7 @@ deploy-romulus:
 	ssh -i deploy/id_rsa -p 2285 root@localhost ifconfig eth0 >tmp/romulus.ifconfig
 	cat tmp/romulus.ifconfig|grep 'inet addr'|sed -r 's/.*addr:([0-9\.]+) .*/\1/' >tmp/romulus.ip
 
-deploy-backends: deploy-remus deploy-romulus
+deploy-backends: build deploy-remus deploy-romulus
 
 deploy-rhea:
 	echo 'Deploying the web front end on Rhea'
