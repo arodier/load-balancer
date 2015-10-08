@@ -41,6 +41,7 @@ do it step by step
 5. Create and start three docker instances, for Rhea, Romus and Remulus
 6. Deploy the backend on Romus and Remulus
 7. Deploy the frontend on Rhea
+8. Check if it's running
 
 ## 1. Check the required packages
 
@@ -86,3 +87,13 @@ Deploy the backend on Romus and Remulus
 
     make deploy-rhea
 
+## 8. Check if it's running
+
+To check if the load balancer is running, open a browser at this address:
+
+    http://localhost:9080/
+
+And refresh the page. You should see, alternatively:
+
+- Hi there, I'm served from remus!
+- Hi there, I'm served from romulus!
