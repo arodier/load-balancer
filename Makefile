@@ -38,22 +38,22 @@ build:
 
 deploy-remus:
 	@echo 'Deploying backend on remus'
-	scp -p -i deploy/id_rsa -P 2284 -o 'StrictHostKeyChecking=No' deploy/service.sh root@localhost:/etc/init.d/sainsbury
-	ssh -i deploy/id_rsa -p 2284 -o 'StrictHostKeyChecking=No' root@localhost service sainsbury stop
-	scp -p -i deploy/id_rsa -P 2284 -o 'StrictHostKeyChecking=No' bin/sainsbury root@localhost:/usr/bin/sainsbury
-	ssh -i deploy/id_rsa -p 2284 -o 'StrictHostKeyChecking=No' root@localhost update-rc.d sainsbury defaults
-	ssh -i deploy/id_rsa -p 2284 -o 'StrictHostKeyChecking=No' root@localhost service sainsbury start
-	ssh -i deploy/id_rsa -p 2284 -o 'StrictHostKeyChecking=No' root@localhost ifconfig eth0 >tmp/remus.ifconfig
+	scp -p -i deploy/id_rsa -P 2284 deploy/service.sh root@localhost:/etc/init.d/sainsbury
+	ssh -i deploy/id_rsa -p 2284 root@localhost service sainsbury stop
+	scp -p -i deploy/id_rsa -P 2284 bin/sainsbury root@localhost:/usr/bin/sainsbury
+	ssh -i deploy/id_rsa -p 2284 root@localhost update-rc.d sainsbury defaults
+	ssh -i deploy/id_rsa -p 2284 root@localhost service sainsbury start
+	ssh -i deploy/id_rsa -p 2284 root@localhost ifconfig eth0 >tmp/remus.ifconfig
 	cat tmp/remus.ifconfig|grep 'inet addr'|sed -r 's/.*addr:([0-9\.]+) .*/\1/' >tmp/remus.ip
 
 deploy-romulus:
 	@echo 'Deploying backend on romulus'
-	scp -p -i deploy/id_rsa -P 2285 -o 'StrictHostKeyChecking=No' deploy/service.sh root@localhost:/etc/init.d/sainsbury
-	ssh -i deploy/id_rsa -p 2285 -o 'StrictHostKeyChecking=No' root@localhost service sainsbury stop
-	scp -p -i deploy/id_rsa -P 2285 -o 'StrictHostKeyChecking=No' bin/sainsbury root@localhost:/usr/bin/sainsbury
-	ssh -i deploy/id_rsa -p 2285 -o 'StrictHostKeyChecking=No' root@localhost update-rc.d sainsbury defaults
-	ssh -i deploy/id_rsa -p 2285 -o 'StrictHostKeyChecking=No' root@localhost service sainsbury start
-	ssh -i deploy/id_rsa -p 2285 -o 'StrictHostKeyChecking=No' root@localhost ifconfig eth0 >tmp/romulus.ifconfig
+	scp -p -i deploy/id_rsa -P 2285 deploy/service.sh root@localhost:/etc/init.d/sainsbury
+	ssh -i deploy/id_rsa -p 2285 root@localhost service sainsbury stop
+	scp -p -i deploy/id_rsa -P 2285 bin/sainsbury root@localhost:/usr/bin/sainsbury
+	ssh -i deploy/id_rsa -p 2285 root@localhost update-rc.d sainsbury defaults
+	ssh -i deploy/id_rsa -p 2285 root@localhost service sainsbury start
+	ssh -i deploy/id_rsa -p 2285 root@localhost ifconfig eth0 >tmp/romulus.ifconfig
 	cat tmp/romulus.ifconfig|grep 'inet addr'|sed -r 's/.*addr:([0-9\.]+) .*/\1/' >tmp/romulus.ip
 
 deploy-backends: deploy-remus deploy-romulus
@@ -63,11 +63,11 @@ deploy-rhea:
 	cp deploy/nginx.conf /tmp
 	sed -i s/ROMULUS_IP/`cat tmp/romulus.ip`/ /tmp/nginx.conf
 	sed -i s/REMUS_IP/`cat tmp/remus.ip`/ /tmp/nginx.conf
-	ssh -i deploy/id_rsa -p 2280 -o 'StrictHostKeyChecking=No' root@localhost apt-get -y install nginx
-	scp -i deploy/id_rsa -P 2280 -o 'StrictHostKeyChecking=No' /tmp/nginx.conf root@localhost:/etc/nginx/sites-available/sainsbury.conf
-	ssh -i deploy/id_rsa -p 2280 -o 'StrictHostKeyChecking=No' root@localhost ln -nsf /etc/nginx/sites-available/sainsbury.conf /etc/nginx/sites-enabled/sainsbury.conf
-	ssh -i deploy/id_rsa -p 2280 -o 'StrictHostKeyChecking=No' root@localhost rm -f /etc/nginx/sites-enabled/default
-	ssh -i deploy/id_rsa -p 2280 -o 'StrictHostKeyChecking=No' root@localhost service nginx restart
+	ssh -i deploy/id_rsa -p 2280 root@localhost apt-get -y install nginx
+	scp -i deploy/id_rsa -P 2280 /tmp/nginx.conf root@localhost:/etc/nginx/sites-available/sainsbury.conf
+	ssh -i deploy/id_rsa -p 2280 root@localhost ln -nsf /etc/nginx/sites-available/sainsbury.conf /etc/nginx/sites-enabled/sainsbury.conf
+	ssh -i deploy/id_rsa -p 2280 root@localhost rm -f /etc/nginx/sites-enabled/default
+	ssh -i deploy/id_rsa -p 2280 root@localhost service nginx restart
 	rm -f /tmp/nginx.conf
 
 
@@ -120,14 +120,17 @@ docker-jessie-build: docker-jessie-import
 # Run jessie instance 1: remus
 docker-jessie-start-remus:
 	sudo docker run -d -h remus -p 2284:22 -p 9084:8484 --cidfile=tests/temp/remus-server.id sainsbury-server
+	ssh-keyscan -p 2284 -H localhost >>~/.ssh/known_hosts
 
 # Run jessie instance 2: romulus
 docker-jessie-start-romulus:
 	sudo docker run -d -h romulus -p 2285:22 -p 9085:8484 --cidfile=tests/temp/romulus-server.id sainsbury-server
+	ssh-keyscan -p 2285 -H localhost >>~/.ssh/known_hosts
 
 # Web front end: rhea
 docker-jessie-start-rhea:
 	sudo docker run -d -h rhea -p 2280:22 -p 9080:80 --cidfile=tests/temp/rhea-server.id sainsbury-server
+	ssh-keyscan -p 2280 -H localhost >>~/.ssh/known_hosts
 
 docker-jessie-start-all: docker-jessie-build docker-jessie-start-romulus docker-jessie-start-remus docker-jessie-start-rhea
 
@@ -154,11 +157,11 @@ docker-jessie-stop-rhea:
 
 # Simple shortcut to connect on the vm
 docker-jessie-connect-remus:
-	ssh -i deploy/id_rsa -p 2284 -o 'StrictHostKeyChecking=No' sainsbury@localhost
+	ssh -i deploy/id_rsa -p 2284 sainsbury@localhost
 
 docker-jessie-connect-romulus:
-	ssh -i deploy/id_rsa -p 2285 -o 'StrictHostKeyChecking=No' sainsbury@localhost
+	ssh -i deploy/id_rsa -p 2285 sainsbury@localhost
 
 docker-jessie-connect-rhea:
-	ssh -i deploy/id_rsa -p 2280 -o 'StrictHostKeyChecking=No' sainsbury@localhost
+	ssh -i deploy/id_rsa -p 2280 sainsbury@localhost
 
