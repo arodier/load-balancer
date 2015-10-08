@@ -21,18 +21,18 @@ RUN TERM=linux apt-get install openssh-server openssh-client rsync --yes --force
 # Expose the SSH port
 EXPOSE 22
 
-# Create the sainsbury user, in the sudo group
+# Create a simple user, in the sudo group
 # It maybe not mandatory, just a demo of what is feasible
 # if we need to create another admin dedicated account
-RUN useradd -ms /bin/bash -G sudo sainsbury
-RUN echo "sainsbury:sainsbury" | chpasswd
+RUN useradd -ms /bin/bash -G sudo sains
+RUN echo "sains:sains" | chpasswd
 
 # Use proper permissions on the SSH folder
 RUN chown -R root:root /root/.ssh
 
-# Also copy the SSH key to sainsbury user
-RUN cp -r /root/.ssh /home/sainsbury/
-RUN chown sainsbury:sainsbury -R /home/sainsbury/.ssh/
+# Also copy the SSH key to sains user
+RUN cp -r /root/.ssh /home/sains/
+RUN chown sains:sains -R /home/sains/.ssh/
 
 # Init www-data user
 EXPOSE 80
