@@ -4,7 +4,7 @@ _A simple and funny round robin load balancer example, using nginx as a frontend
 
 Docker is used for the local running.
 
-The load baklancer is called Rhea, and the two backends are called Romulus and Remus
+The load balancer is called Rhea, and the two backends are called Romulus and Remus
 
 This is a proof of concept, I don't have the time to build a perfect solution,
 but ideally, I would use Ansible or Puppet to deploy the application.
