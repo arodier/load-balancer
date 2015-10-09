@@ -4,11 +4,7 @@
 
 # Standard env
 GO ?= /usr/bin/go
-MARKDOWN ?= /usr/bin/markdown
 BUILD_OPTIONS ?= -race
-PORT ?= 8484
-IP ?= 127.0.0.1
-URL ?= http://$(IP):$(PORT)/
 
 all: clean build
 
@@ -27,7 +23,7 @@ dirs:
 
 build:
 	@echo -n "Building the program: "
-	@$(GO) build $(BUILD_OPTIONS) -o bin/sains src/main.go && echo 'OK'
+	$(GO) build $(BUILD_OPTIONS) -o bin/sains src/main.go && echo 'OK'
 
 ##############################################################################
 # GENERIC DEPLOYMENT USING SSH

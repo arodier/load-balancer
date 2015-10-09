@@ -7,11 +7,9 @@ Docker is used for the local running.
 
 The load balancer is called Rhea, and the two backends are called Romulus and Remus
 
-This is a proof of concept, I don't have the time to build a perfect solution,
-but ideally, I would use Ansible or Puppet to deploy the application.
-
-I should have created more scripts, for now, the project is simple enough
-the put almost everything in the makefile.
+This is a proof of concept to show nginx load balancing feature.
+The project is simple enough to place almost all the instructions in the Makefile
+For a more complex project, use Ansible or Puppet to deploy the application.
 
 ## Requirements
 
@@ -124,7 +122,7 @@ For the frontend, this can be achieved almost the same way:
     export BACKEND_ADDRESSES=192.168.42.2,192.168.42.3,192.168.42.4
     export DEPLOY_SERVER=192.168.42.44
     export DEPLOY_KEY=/var/lib/jenkins/.ssh/id_rsa
-    make deploy-frontkend
+    make deploy-frontend
 
 This will generate an nginx configuration file, with the backend addresses from BACKEND_ADDRESSES.
 
