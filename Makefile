@@ -98,11 +98,11 @@ deploy-rhea:
 
 
 ##############################################################################
-# INSTALL NEEDED PACKAGES FOR DOCKER AND ANSIBLE.
+# INSTALL NEEDED PACKAGES
 ##############################################################################
 packages:
-	@echo 'Installing needed packages (docker/debootstrap/ansible/etc.)'
-	sudo apt-get -qq install debootstrap docker.io ansible
+	@echo 'Installing needed packages (docker/debootstrap/golang/etc.)'
+	sudo apt-get -qq install debootstrap docker.io golang
 
 ##############################################################################
 # CREATE THE FULL DOCKER IMAGES FOR TESTING / RUNNING
